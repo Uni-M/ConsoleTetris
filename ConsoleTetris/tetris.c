@@ -42,15 +42,15 @@ int main()
 		PrintField(field);
 
 		char c = (_kbhit()) ? _getch() : -1;
-		switch (c)
-		{
-		case KEY_MOVE_LEFT:			ShiftLeft(field);		break;
-		case KEY_MOVE_RIGHT:		ShiftRight(field);		break;
-		case KEY_MOVE_DOWN:			ShiftDown(field);		break;
-		case KEY_ROTATE:			Rotate(field);			break;
-		case KEY_QUIT:				in_game = false;		break;
-		default:					ShiftDown(field);		break;
-		}
+
+		// посмотреть таймер на ассемблере и добавить для рассчета повторения опускания детали
+		if		(c == KEY_MOVE_LEFT)  ShiftLeft(field);
+		else if (c == KEY_MOVE_RIGHT) ShiftRight(field);
+		else if (c == KEY_MOVE_DOWN)  ShiftDown(field);
+		else if (c == KEY_ROTATE)	  Rotate(field);
+		else if (c == KEY_QUIT)		  in_game = false;
+		else						  ShiftDown(field);
+
 
 		if (IsFixed(field) == 0)
 		{
@@ -160,16 +160,23 @@ void AddInfo(int i)
 	HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleTextAttribute(consoleHandle, 7);
 
-	switch (i)
-	{
-	case 1:		printf("\tcontrol keys:");							break;
+	if		(i == 1)	printf("\tcontrol keys:");
+	else if (i == 3)	printf("\tmove left.......%c", KEY_MOVE_LEFT);
+	else if (i == 4)	printf("\tmove right......%c", KEY_MOVE_RIGHT);
+	else if (i == 5)	printf("\tmove down.......%c", KEY_MOVE_DOWN);
+	else if (i == 6)	printf("\trotate..........%c", KEY_ROTATE);
+	else if (i == 7)	printf("\tquit............%c", KEY_QUIT);
 
-	case 3:		printf("\tmove left.......%c", KEY_MOVE_LEFT);		break;
-	case 4:		printf("\tmove right......%c", KEY_MOVE_RIGHT);		break;
-	case 5:		printf("\tmove down.......%c", KEY_MOVE_DOWN);		break;
-	case 6:		printf("\trotate..........%c", KEY_ROTATE);			break;
-	case 7:		printf("\tquit............%c", KEY_QUIT);			break;
-	}
+	//switch (i)
+	//{
+	//	case 1:		printf("\tcontrol keys:");							break;
+
+	//	case 3:		printf("\tmove left.......%c", KEY_MOVE_LEFT);		break;
+	//	case 4:		printf("\tmove right......%c", KEY_MOVE_RIGHT);		break;
+	//	case 5:		printf("\tmove down.......%c", KEY_MOVE_DOWN);		break;
+	//	case 6:		printf("\trotate..........%c", KEY_ROTATE);			break;
+	//	case 7:		printf("\tquit............%c", KEY_QUIT);			break;
+	//}
 	SetConsoleTextAttribute(consoleHandle, 14);
 }
 
@@ -212,10 +219,10 @@ void Rotate(bool** field)
 		int x = current_copy.data[1][0] + rint(x_shifted * cos(angle) - y_shifted * sin(angle));
 		int y = current_copy.data[1][1] + rint(x_shifted * sin(angle) + y_shifted * cos(angle));
 
-		if (x < 0 && k_x > x) k_x = -x;
-		if (y < 0 && k_y > y) k_y = -y;
+		if (x < 0 && k_x > x)				k_x = -x;
+		if (y < 0 && k_y > y)				k_y = -y;
 		if (x >= FIELD_COLUMNS && k_x < x)  k_x = x - FIELD_COLUMNS - 1;
-		if (y >= FIELD_ROWS && k_y < y)  k_y = x - FIELD_ROWS - 1;
+		if (y >= FIELD_ROWS && k_y < y)		k_y = x - FIELD_ROWS - 1;
 
 		current.data[i][0] = x;
 		current.data[i][1] = y;
@@ -311,13 +318,18 @@ int CheckLine(bool** field)
 
 int CountScore(int count_lines)
 {
-	switch (count_lines)
-	{
-	case 1:			return 10;
-	case 2:			return 25;
-	case 3:			return 100;
-	case 4:			return 250;
-	}
+	if		(count_lines == 1)	return 10;
+	else if (count_lines == 2)	return 25;
+	else if (count_lines == 3)	return 100;
+	else if	(count_lines == 4)	return 250;
+
+	//switch (count_lines)
+	//{
+	//case 1:			return 10;
+	//case 2:			return 25;
+	//case 3:			return 100;
+	//case 4:			return 250;
+	//}
 }
 
 void ShiftDownLine(int line, bool** field)
