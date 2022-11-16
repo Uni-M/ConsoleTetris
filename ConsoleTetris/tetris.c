@@ -24,6 +24,7 @@ int main()
 
 	GenerateRandomFigure(FIGURES);
 
+	clock_t start = clock(), diff;
 
 	while (in_game)
 	{
@@ -37,14 +38,21 @@ int main()
 
 		char c = (_kbhit()) ? _getch() : -1;
 
-		
+		diff = clock() - start;
+
 		if      (c == KEY_MOVE_LEFT)  ShiftLeft(field);
 		else if (c == KEY_MOVE_RIGHT) ShiftRight(field);
 		else if (c == KEY_MOVE_DOWN)  ShiftDown(field);
 		else if (c == KEY_ROTATE)     Rotate(field);
 		else if (c == KEY_QUIT)       in_game = false;
-		else                          ShiftDown(field); // todo do it on a timer
-
+		else
+		{
+			if (diff > 1000) 
+			{ 
+				ShiftDown(field); 
+				start = clock(); 
+			}
+		} 
 
 		if (IsFixed(field) == 0)
 		{
@@ -302,10 +310,11 @@ int CheckLine(bool** field)
 
 int CountScore(int count_lines)
 {
-	if      (count_lines == 1)  return 10;
+	if (count_lines == 1)  return 10;
 	else if (count_lines == 2)  return 25;
 	else if (count_lines == 3)  return 100;
 	else if (count_lines == 4)  return 250;
+	else						return 0;
 }
 
 void ShiftDownLine(int line, bool** field)
