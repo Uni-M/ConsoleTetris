@@ -2,12 +2,6 @@
 
 Figure current;
 
-/*
-* Задача 6
-* Написать фрагмент кода, обрабатывающий поле для игры в тетрис размерами 20 на 10 после очередного хода.
-* Ход начинается с появления фигуры, включает её повороты и сдвиги, выполняемые игроком и завершается,
-* когда фигура зафиксировалась на игровом поле.
-*/
 int main()
 {
 	srand(time(NULL));
@@ -43,13 +37,13 @@ int main()
 
 		char c = (_kbhit()) ? _getch() : -1;
 
-		// посмотреть таймер на ассемблере и добавить для рассчета повторения опускания детали
-		if		(c == KEY_MOVE_LEFT)  ShiftLeft(field);
+		
+		if      (c == KEY_MOVE_LEFT)  ShiftLeft(field);
 		else if (c == KEY_MOVE_RIGHT) ShiftRight(field);
 		else if (c == KEY_MOVE_DOWN)  ShiftDown(field);
-		else if (c == KEY_ROTATE)	  Rotate(field);
-		else if (c == KEY_QUIT)		  in_game = false;
-		else						  ShiftDown(field);
+		else if (c == KEY_ROTATE)     Rotate(field);
+		else if (c == KEY_QUIT)       in_game = false;
+		else                          ShiftDown(field); // todo do it on a timer
 
 
 		if (IsFixed(field) == 0)
@@ -160,23 +154,13 @@ void AddInfo(int i)
 	HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 	SetConsoleTextAttribute(consoleHandle, 7);
 
-	if		(i == 1)	printf("\tcontrol keys:");
-	else if (i == 3)	printf("\tmove left.......%c", KEY_MOVE_LEFT);
-	else if (i == 4)	printf("\tmove right......%c", KEY_MOVE_RIGHT);
-	else if (i == 5)	printf("\tmove down.......%c", KEY_MOVE_DOWN);
-	else if (i == 6)	printf("\trotate..........%c", KEY_ROTATE);
-	else if (i == 7)	printf("\tquit............%c", KEY_QUIT);
+	if      (i == 1)   printf("\tcontrol keys:");
+	else if (i == 3)   printf("\tmove left.......%c", KEY_MOVE_LEFT);
+	else if (i == 4)   printf("\tmove right......%c", KEY_MOVE_RIGHT);
+	else if (i == 5)   printf("\tmove down.......%c", KEY_MOVE_DOWN);
+	else if (i == 6)   printf("\trotate..........%c", KEY_ROTATE);
+	else if (i == 7)   printf("\tquit............%c", KEY_QUIT);
 
-	//switch (i)
-	//{
-	//	case 1:		printf("\tcontrol keys:");							break;
-
-	//	case 3:		printf("\tmove left.......%c", KEY_MOVE_LEFT);		break;
-	//	case 4:		printf("\tmove right......%c", KEY_MOVE_RIGHT);		break;
-	//	case 5:		printf("\tmove down.......%c", KEY_MOVE_DOWN);		break;
-	//	case 6:		printf("\trotate..........%c", KEY_ROTATE);			break;
-	//	case 7:		printf("\tquit............%c", KEY_QUIT);			break;
-	//}
 	SetConsoleTextAttribute(consoleHandle, 14);
 }
 
@@ -318,18 +302,10 @@ int CheckLine(bool** field)
 
 int CountScore(int count_lines)
 {
-	if		(count_lines == 1)	return 10;
-	else if (count_lines == 2)	return 25;
-	else if (count_lines == 3)	return 100;
-	else if	(count_lines == 4)	return 250;
-
-	//switch (count_lines)
-	//{
-	//case 1:			return 10;
-	//case 2:			return 25;
-	//case 3:			return 100;
-	//case 4:			return 250;
-	//}
+	if      (count_lines == 1)  return 10;
+	else if (count_lines == 2)  return 25;
+	else if (count_lines == 3)  return 100;
+	else if (count_lines == 4)  return 250;
 }
 
 void ShiftDownLine(int line, bool** field)
