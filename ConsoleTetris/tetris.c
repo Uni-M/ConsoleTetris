@@ -1,6 +1,7 @@
 #include "tetris.h"
 
 Figure current;
+Figure next;
 
 int main()
 {
@@ -22,7 +23,8 @@ int main()
 		{ initFigure((int*)g6, 2, 4), 2, 4}
 	};
 
-	GenerateRandomFigure(FIGURES);
+	GenerateRandomFigure(FIGURES, &current);
+	GenerateRandomFigure(FIGURES, &next);
 
 	clock_t start = clock(), diff;
 
@@ -57,10 +59,12 @@ int main()
 		if (IsFixed(field) == 0)
 		{
 			score += CheckLine(field);
-			GenerateRandomFigure(FIGURES);
+			ShowNextFigure(FIGURES, &current, &next);
 
 			if (GameOver(field) == 1) {
 				in_game = false;
+				DeleteFigure(current);
+				DeleteFigure(next);
 				DeleteFigures(FIGURES);
 			}
 		}
@@ -68,24 +72,25 @@ int main()
 		Sleep(500);
 		setcur(0, 0);
 	}
+
+	return 0;
 }
 
 
 
 int** initFigure(int* arr, size_t columns_count, size_t rows_count)
 {
+
+	int** a = (int**)malloc(rows_count * sizeof(int*));
+	for (int i = 0; i < rows_count; ++i)
 	{
-		int** a = (int**)malloc(rows_count * sizeof(int*));
-		for (int i = 0; i < rows_count; ++i)
+		a[i] = (int*)malloc(columns_count * sizeof(int));
+		for (int j = 0; j < columns_count; ++j)
 		{
-			a[i] = (int*)malloc(columns_count * sizeof(int));
-			for (int j = 0; j < columns_count; ++j)
-			{
-				a[i][j] = *(arr + i * columns_count + j);
-			}
+			a[i][j] = *(arr + i * columns_count + j);
 		}
-		return a;
 	}
+	return a;
 
 }
 
@@ -100,7 +105,7 @@ bool** InitField()
 	return field;
 }
 
-void GenerateRandomFigure(Figure FIGURES[])
+void GenerateRandomFigure(Figure FIGURES[], Figure* figure)
 {
 	Figure random_figure = FIGURES[rand() % FIGURES_COUNT];
 	Figure new_figure = random_figure;
@@ -116,8 +121,27 @@ void GenerateRandomFigure(Figure FIGURES[])
 
 	}
 
-	DeleteFigure(current);
-	current = new_figure;
+	DeleteFigure(*figure);
+	*figure = new_figure;
+}
+
+void ShowNextFigure(Figure FIGURES[], Figure* current, Figure* next)
+{
+	DeleteFigure(*current);
+
+	current->data = (int**)malloc(next->rows_count * sizeof(int*));
+	for (int i = 0; i < next->rows_count; ++i) {
+
+		current->data[i] = (int*)malloc(next->columns_count * sizeof(int));
+
+		current->data[i][0] = next->data[i][0];
+		current->data[i][1] = next->data[i][1];
+	}
+
+	current->columns_count = next->columns_count;
+	current->rows_count = next->rows_count;
+	GenerateRandomFigure(FIGURES, next);
+
 }
 
 void PrintField(bool** field)
@@ -143,7 +167,9 @@ void PrintField(bool** field)
 
 			if (fig == 1 || field[i][j] != 0)
 			{
+				SetConsoleTextAttribute(consoleHandle, 9);
 				printf("# ");
+				SetConsoleTextAttribute(consoleHandle, 14);
 			}
 			else
 			{
@@ -151,26 +177,70 @@ void PrintField(bool** field)
 			}
 		}
 
-		AddInfo(i);
 		printf("\n");
+	}
+
+	AddInfo();
+
+}
+
+void AddInfo()
+{
+	HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
+
+	int row = 5;
+	int column = FIELD_COLUMNS * 2 + 4;
+	int frameSize = 4;
+
+	SetConsoleTextAttribute(consoleHandle, 13);
+	PrintInfo(column, row, "control keys:");
+	SetConsoleTextAttribute(consoleHandle, 7);
+
+	for (row+=2; row <= 11; ++row)
+	{
+		COORD position = { column, row };
+		SetConsoleCursorPosition(consoleHandle, position);
+		if (row == 7)         printf("move left.......%c", KEY_MOVE_LEFT);
+		else if (row == 8)    printf("move right......%c", KEY_MOVE_RIGHT);
+		else if (row == 9)    printf("move down.......%c", KEY_MOVE_DOWN);
+		else if (row == 10)   printf("rotate..........%c", KEY_ROTATE);
+		else if (row == 11)   printf("quit............%c", KEY_QUIT);	
+	}
+
+	row = 13;
+	SetConsoleTextAttribute(consoleHandle, 13);
+	PrintInfo(column, row++, "next figure:");
+	SetConsoleTextAttribute(consoleHandle, 7);
+
+
+	PrintInfo(column, row++, "+----------+");
+
+	int frameRow;
+	for (frameRow = row; frameRow < row + frameSize; ++frameRow)
+	{
+		PrintInfo(column, frameRow, "|          |");
+	}
+
+	PrintInfo(column, frameRow, "+----------+");
+
+
+	SetConsoleTextAttribute(consoleHandle, 9);
+
+	for (int i = 0; i < next.rows_count; ++i)
+	{
+		PrintInfo(column + next.data[i][0], row + next.data[i][1], "#");
 	}
 
 }
 
-void AddInfo(int i)
+void PrintInfo(int x, int y, char* text)
 {
 	HANDLE consoleHandle = GetStdHandle(STD_OUTPUT_HANDLE);
-	SetConsoleTextAttribute(consoleHandle, 7);
-
-	if      (i == 1)   printf("\tcontrol keys:");
-	else if (i == 3)   printf("\tmove left.......%c", KEY_MOVE_LEFT);
-	else if (i == 4)   printf("\tmove right......%c", KEY_MOVE_RIGHT);
-	else if (i == 5)   printf("\tmove down.......%c", KEY_MOVE_DOWN);
-	else if (i == 6)   printf("\trotate..........%c", KEY_ROTATE);
-	else if (i == 7)   printf("\tquit............%c", KEY_QUIT);
-
-	SetConsoleTextAttribute(consoleHandle, 14);
+	COORD position = { x, y };
+	SetConsoleCursorPosition(consoleHandle, position);
+	printf("%s", text);
 }
+
 
 Figure CopyFigure(Figure figure) {
 
